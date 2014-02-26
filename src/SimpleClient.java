@@ -12,7 +12,6 @@ public class SimpleClient {
 				String hostName = args[0];
 				
 				int portNumber = 2000;//Integer.parseInt(args[1]);
-				boolean shutdown = false;
 
 				try {
 				    Socket echoSocket = new Socket(hostName, portNumber);
@@ -25,9 +24,18 @@ public class SimpleClient {
 			    
 				    String userInput = "foobar";
 				    
-				    while (!userInput.equals("exit") && !echoSocket.isClosed()){
+				    while (true){
 				    	
 				    	userInput = stdIn.nextLine();
+				    	if (userInput.equals("exit")){
+				    		
+				    		break;
+				    	}
+				    	if (userInput.equals("SHUTDOWN")){
+				    		out.print(userInput + "\n");
+				    		System.out.println(in.nextLine());
+				    		break;
+				    	}
 				    	
 				    	if (userInput == System.lineSeparator()){
 				    		
@@ -40,10 +48,7 @@ public class SimpleClient {
 					    String input;
 					    while (in.hasNextLine()){
 					    	input = in.nextLine();
-					    	if (input.equals("shutdown")){
-					    		shutdown = true;
-					    		break;
-					    	}
+					    	
 					    	if (input.equals("done")){
 					    		break;
 					    	}
@@ -51,19 +56,19 @@ public class SimpleClient {
 					    	
 						}
 					    
-					    if (shutdown){
-					    	break;
-					    }
+					    
 					 
 
 				    }
-				
-					
-				    echoSocket.close();
-				    in.close();
-				    out.close();
-				    stdIn.close();
+				    while (!echoSocket.isClosed()){
+				    	stdIn.close();
+					    out.close();
+					    in.close();
+					    echoSocket.close();
+				    }
 				    
+				    
+				   				    
 				}	catch (IOException e) {
 		            System.err.println("???");
 		            System.exit(1);

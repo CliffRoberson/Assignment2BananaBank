@@ -1,4 +1,5 @@
 import java.net.*;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.io.*;
@@ -17,19 +18,22 @@ private static Object lock1 = new Object();
 	}
 	
 
-	public void run() {
-        try {
-
-        		BananaBankServer.available.acquire();
+	public void run(){
+		Scanner in = null;
+		PrintStream out = null;
+        
+		try{
+       		BananaBankServer.available.acquire();
         	
-        	    Scanner in = new Scanner(clientSocket.getInputStream());
-        	    PrintStream out = new PrintStream(clientSocket.getOutputStream(), false);
-        	    
-        		while (!out.checkError()){
+        	   
+			in = new Scanner(clientSocket.getInputStream());
+       	    out = new PrintStream(clientSocket.getOutputStream(), false);
+		        	    
+        		while (true){
         			
-		            if (in.hasNextLine()){
+		            String foo = in.nextLine();
 		            	
-		            	String foo = in.nextLine();		            	
+		            		            	
 		            	
 		            	if (foo.equals(null) )
 		            	{
@@ -41,7 +45,6 @@ private static Object lock1 = new Object();
 		    			{
 		    				BananaBankServer.shutdown = true;
 		    				while (BananaBankServer.max_permits - BananaBankServer.available.availablePermits() != 1 ){}//waits for threads to stop
-		    		    	
 		    		    	int total = 0;
 		    		    	for (Account a : BananaBankServer.allAccounts){
 		    		    		total = a.getBalance() + total;
@@ -86,20 +89,31 @@ private static Object lock1 = new Object();
 		            		out.println("Failure, invalid command");
 		            	}
 		        
+		            
 		            out.println("done");
-		           	out.flush();
+		           	//out.flush();
 
 		            }
 		            
-        		}
-	            BananaBankServer.available.release();
+		          
+		           
+		            
+		            
+        		
+        		
+	            
+		}catch(IOException | InterruptedException e){
+			e.printStackTrace();
+            
 
-        		in.close();
-	            out.close();
-	            clientSocket.close();
-        			
-        }catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-	}
+		}catch(NoSuchElementException e){
+			//do nothing, thrown when socket closed
+		}finally{
+				in.close();
+				out.close();
+            	BananaBankServer.available.release();            
+		}
+		}
 }
+	
+
