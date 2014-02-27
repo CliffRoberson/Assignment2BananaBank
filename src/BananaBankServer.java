@@ -12,6 +12,7 @@ public class BananaBankServer {
 		
 		
 		
+		
 		static boolean shutdown = false;
 		static Semaphore available = new Semaphore(max_permits, true);
 		
@@ -24,8 +25,7 @@ public class BananaBankServer {
 				
 			allAccounts = bb.getAllAccounts();
 			
-
-			
+					
 	    	int portNumber = 2000;
 
 	    	ServerSocket serverSocket= new ServerSocket(portNumber);

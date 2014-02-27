@@ -11,7 +11,7 @@ private double amount = 0;
 private double src = 0;
 private double dest = 0;
 private boolean done = false;
-private static Object lock1 = new Object();
+//private static Object lock1 = new Object();
 
 	public BananaBankServerWorkerThread (Socket clientSocket) {
 		this.clientSocket = clientSocket;
@@ -59,9 +59,7 @@ private static Object lock1 = new Object();
 				            	src = foobar.nextDouble();
 				            	dest = foobar.nextDouble();				            	
 				            	foobar.close();
-				            	//out.println(amount + " " + src + " " + dest + " ");
-				            	
-				            	synchronized(lock1){
+				            
 				            	
 				            		for (Account a : BananaBankServer.allAccounts){
 					            		if (a.getAccountNumber() == src){
@@ -69,8 +67,30 @@ private static Object lock1 = new Object();
 					            				out.println("Failure -- not enough money");
 					            			}
 					            			else {
-					            				a.transferTo((int) amount, BananaBankServer.bb.getAccount((int) dest));
-								           		out.println("Success, " + (int)amount +" transfered from account " + (int)src + " to " + (int)dest +".");
+					            				Account tmp = BananaBankServer.bb.getAccount((int)dest);
+					            				
+					            				//http://stackoverflow.com/questions/5151266/how-to-avoid-nested-synchronization-and-the-resulting-deadlock
+					            				int srcHash = System.identityHashCode(a);
+					            				int destHash = System.identityHashCode(tmp);
+					            				
+					            				if (srcHash < destHash){
+					            					synchronized(a){
+						            					synchronized(tmp){
+							            					a.transferTo((int) amount, tmp);
+							            				}
+						            				}
+					            				}
+					            				else {
+					            					synchronized(tmp){
+						            					synchronized(a){
+							            					a.transferTo((int) amount, tmp);
+							            				}
+						            				}
+					            				}
+					            				
+					            				
+					            				
+				            					out.println("Success, " + (int)amount +" transfered from account " + (int)src + " to " + (int)dest +".");
 
 					            			}
 					            			done = true;
@@ -80,7 +100,7 @@ private static Object lock1 = new Object();
 					            		
 					            	}
 				           		
-				            	}
+				            	//}
 
 				            	if (!done){
 				            		out.println("Account number not found");
